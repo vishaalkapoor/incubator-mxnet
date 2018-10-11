@@ -97,7 +97,7 @@ core_logic: {
           timeout(time: 60, unit: 'MINUTES') {
             init_git()
               unpack_lib('gpu')
-              docker_run('ubuntu_nightly_gpu', 'tutorialtest_ubuntu_python2_gpu', true, '3g')
+              docker_run('ubuntu_nightly_gpu', 'nightly_tutorialtest_ubuntu_python2_gpu', true, '3g')
           }
         }
       }
@@ -108,7 +108,7 @@ core_logic: {
           timeout(time: 60, unit: 'MINUTES') {
             init_git()
               unpack_lib('gpu')
-              docker_run('ubuntu_nightly_gpu', 'tutorialtest_ubuntu_python3_gpu', true, '3g')
+              docker_run('ubuntu_nightly_gpu', 'nightly_tutorialtest_ubuntu_python3_gpu', true, '3g')
           }
         }
       }
