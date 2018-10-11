@@ -90,6 +90,28 @@ core_logic: {
           utils.docker_run('ubuntu_nightly_gpu', 'nightly_straight_dope_python3_multi_gpu_tests', true)
         }
       }
+    },
+    'Tutorial Tests: Python 2 GPU': {
+      node(NODE_LINUX_GPU) {
+        ws('workspace/it-tutorials-py2') {
+          timeout(time: 60, unit: 'MINUTES') {
+            init_git()
+              unpack_lib('gpu')
+              docker_run('ubuntu_gpu', 'tutorialtest_ubuntu_python2_gpu', true, '3g')
+          }
+        }
+      }
+    },
+    'Tutorial Tests: Python 3 GPU': {
+      node(NODE_LINUX_GPU) {
+        ws('workspace/it-tutorials-py3') {
+          timeout(time: 60, unit: 'MINUTES') {
+            init_git()
+              unpack_lib('gpu')
+              docker_run('ubuntu_gpu', 'tutorialtest_ubuntu_python3_gpu', true, '3g')
+          }
+        }
+      }
     }
   }
 }
