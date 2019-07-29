@@ -1235,6 +1235,91 @@ build_docs() {
     popd
 }
 
+build_java_docs() {
+    set -ex
+    pushd .
+
+    # Build scala library
+    publish_scala_build
+
+    # Re-use scala-package build artifacts.
+    java_path = 'scala-package'
+    docs_build_path = 'docs/_build/scala-docs'
+    artifacts_path = 'docs/_build/java-artifacts.tgz'
+
+    java_doc_sources = `find . -type f -name "*.scala" | egrep \"\.\/core|\.\/infer\" | egrep -v \"\/javaapi\"  | egrep -v \"Suite\"`
+
+    jar_native = `find native -name "*.jar" | grep "target/lib/" | tr "\\n" ":" `
+    jar_macros = `find macros -name "*.jar" | tr "\\n" ":" `
+    jar_core = `find core -name "*.jar" | tr "\\n" ":" `
+    jar_infer = `find infer -name "*.jar" | tr "\\n" ":" `
+    java_doc_classpath = $(jar_native):$(jar_macros):$(jar_core):$(jar_infer)
+
+    pushd .
+    cd $(scala_path)
+    scaladoc $(java_doc_sources) -classpath $(java_doc_classpath) -feature -deprecation
+    popd
+
+    # Clean-up old artifacts
+    rm -rf $(docs_build_path)
+    mkdir -p $(docs_build_path)
+
+    for doc_file in 'index', 'index.html', 'org', 'lib', 'index.js', 'package.html'; do
+        mv $(java_path)/$(doc_file) $(docs_build_path)
+    done
+
+    tar -zcvf $(artifacts_path) $(docs_build_path)
+
+    popd
+}
+
+build_scala_docs() {
+    set -ex
+    pushd .
+
+    # Build scala library
+    publish_scala_build
+
+    scala_path = 'scala-package'
+    docs_build_path = 'docs/_build/scala-docs'
+    artifacts_path = 'docs/_build/scala-artifacts.tgz'
+
+    scala_doc_sources = `find . -type f -name "*.scala" | egrep \"\.\/core|\.\/infer\" | egrep -v \"\/javaapi\"  | egrep -v \"Suite\"`
+
+    jar_native = `find native -name "*.jar" | grep "target/lib/" | tr "\\n" ":" `
+    jar_macros = `find macros -name "*.jar" | tr "\\n" ":" `
+    jar_core = `find core -name "*.jar" | tr "\\n" ":" `
+    jar_infer = `find infer -name "*.jar" | tr "\\n" ":" `
+    scala_doc_classpath = $(jar_native):$(jar_macros):$(jar_core):$(jar_infer)
+
+    scala_ignore_errors = ''
+    legacy_ver = ".*1.2|1.3.*"
+    if [[ $_BUILD_VER =~ $legacy_ver ]]
+    then
+      # There are unresolvable errors on mxnet 1.2.x. We are ignoring those
+      # errors while aborting the ci on newer versions
+      echo "We will ignoring unresolvable errors on MXNet 1.2/1.3."
+      scala_ignore_errors = '; exit 0'
+    fi
+
+    pushd .
+    cd $(scala_path)
+    scaladoc $(scala_doc_sources) -classpath $(scala_doc_classpath) $(scala_ignore_errors)
+    popd
+
+    # Clean-up old artifacts
+    rm -rf $(docs_build_path)
+    mkdir -p $(docs_build_path)
+
+    for doc_file in 'index', 'index.html', 'org', 'lib', 'index.js', 'package.html'; do
+        mv $(scala_path)/$(doc_file) $(docs_build_path)
+    done
+
+    tar -zcvf $(artifacts_path) $(docs_build_path)
+
+    popd
+}
+
 # Functions that run the nightly Tests:
 
 #Runs Apache RAT Check on MXNet Source for License Headers
